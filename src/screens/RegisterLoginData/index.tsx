@@ -10,11 +10,7 @@ import uuid from 'react-native-uuid';
 import { Input } from '../../components/Form/Input';
 import { Button } from '../../components/Form/Button';
 
-import {
-  Container,
-  HeaderTitle,
-  Form
-} from './styles';
+import { Container, HeaderTitle, Form } from './styles';
 
 interface FormData {
   title: string;
@@ -24,27 +20,39 @@ interface FormData {
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Título é obrigatório!'),
-  email: Yup.string().email('Não é um email válido').required('Email é obrigatório!'),
+  email: Yup.string()
+    .email('Não é um email válido')
+    .required('Email é obrigatório!'),
   password: Yup.string().required('Senha é obrigatória!'),
-})
+});
 
 export function RegisterLoginData() {
   const {
     control,
     handleSubmit,
     reset,
-    formState: {
-      errors
-    }
-  } = useForm();
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(schema) });
 
   async function handleRegister(formData: FormData) {
+    const dataKey = '@passmanager:logins';
     const newLoginData = {
       id: String(uuid.v4()),
-      ...formData
-    }
+      ...formData,
+    };
 
     // Save data on AsyncStorage
+    try {
+      const data = await AsyncStorage.getItem(dataKey);
+      const currentData = data ? JSON.parse(data) : [];
+      const formattedData = [...currentData, newLoginData];
+
+      await AsyncStorage.setItem(dataKey, JSON.stringify(formattedData));
+      reset();
+    } catch (err) {
+      console.log(err);
+      Alert.alert('Não foi possível adicionar um novo login');
+    }
   }
 
   return (
@@ -62,6 +70,7 @@ export function RegisterLoginData() {
             name="title"
             error={
               // message error here
+              errors.title && errors.title.message
             }
             control={control}
             placeholder="Escreva o título aqui"
@@ -73,6 +82,7 @@ export function RegisterLoginData() {
             name="email"
             error={
               // message error here
+              errors.email && errors.email.message
             }
             control={control}
             placeholder="Escreva o Email aqui"
@@ -85,6 +95,7 @@ export function RegisterLoginData() {
             name="password"
             error={
               // message error here
+              errors.password && errors.password.message
             }
             control={control}
             secureTextEntry
@@ -93,7 +104,7 @@ export function RegisterLoginData() {
 
           <Button
             style={{
-              marginTop: RFValue(26)
+              marginTop: RFValue(26),
             }}
             title="Salvar"
             onPress={handleSubmit(handleRegister)}
@@ -101,5 +112,5 @@ export function RegisterLoginData() {
         </Form>
       </Container>
     </KeyboardAvoidingView>
-  )
+  );
 }
