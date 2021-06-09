@@ -12,12 +12,12 @@ interface LoginListDataProps {
 
 export const Container = styled.View`
   flex: 1;
-  background-color: #4E3975;
+  background-color: ${({ theme }) => theme.colors.primary};
   padding: 0 27px;
 `;
 
 export const LoginList = styled(
-  FlatList as new () => FlatList<LoginListDataProps>
+  FlatList as new () => FlatList<LoginListDataProps>,
 ).attrs({
   showsVerticalScrollIndicator: false,
 })`
@@ -32,6 +32,6 @@ export const EmptyListContainer = styled.View`
 
 export const EmptyListMessage = styled.Text`
   font-size: ${RFValue(16)}px;
-  font-family: 'Poppins_500Medium';
-  color: #9883BF;
+  font-family: ${({ theme }) => theme.fonts.medium};
+  color: ${({ theme }) => theme.colors.secondary};
 `;

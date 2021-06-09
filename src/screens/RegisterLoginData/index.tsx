@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 import { RFValue } from 'react-native-responsive-fontsize';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import uuid from 'react-native-uuid';
+
+import { useStorageData } from '../../contexts/hooks/useStorageData';
 
 import { Input } from '../../components/Form/Input';
 import { Button } from '../../components/Form/Button';
@@ -27,6 +27,7 @@ const schema = Yup.object().shape({
 });
 
 export function RegisterLoginData() {
+  const { registerStorageData } = useStorageData();
   const {
     control,
     handleSubmit,
@@ -35,19 +36,9 @@ export function RegisterLoginData() {
   } = useForm({ resolver: yupResolver(schema) });
 
   async function handleRegister(formData: FormData) {
-    const dataKey = '@passmanager:logins';
-    const newLoginData = {
-      id: String(uuid.v4()),
-      ...formData,
-    };
-
     // Save data on AsyncStorage
     try {
-      const data = await AsyncStorage.getItem(dataKey);
-      const currentData = data ? JSON.parse(data) : [];
-      const formattedData = [...currentData, newLoginData];
-
-      await AsyncStorage.setItem(dataKey, JSON.stringify(formattedData));
+      await registerStorageData(formData);
       reset();
     } catch (err) {
       console.log(err);
